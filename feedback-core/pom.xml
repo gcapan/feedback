@@ -19,12 +19,6 @@
       <groupId>org.apache.mahout</groupId>
       <artifactId>mahout-core</artifactId>
       <version>${mahout.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>*</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 
