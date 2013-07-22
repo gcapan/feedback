@@ -13,14 +13,21 @@ import java.util.Collection;
 /**
  * {@author} gcapan
  */
-public class SideInfoAwareDataModel implements DataModel {
+public class SideInfoAwareDataModel extends MatrixBackedDataModel {
 
   public DataModel dataModel;
   public ContentTable contentTable;
   public DemographicsTable demographicsTable;
   public final int MAX = 100;
 
-  public SideInfoAwareDataModel(DataModel base, ContentTable contentTable, DemographicsTable demographicsTable) {
+  public SideInfoAwareDataModel(int maxNoOfUsers, int maxNoOfItems, int maxUserId, int maxItemId) {
+    super(maxNoOfUsers, maxNoOfItems, maxUserId, maxItemId);    //To change body of overridden methods use File | Settings |
+    // File Templates.
+  }
+
+  public SideInfoAwareDataModel(int maxNoOfUsers, int maxNoOfItems, int maxUserId, int maxItemId, DataModel base,
+                                ContentTable contentTable, DemographicsTable demographicsTable) {
+    this(maxNoOfUsers, maxNoOfItems, maxUserId, maxItemId);
     this.dataModel = base;
     this.contentTable = contentTable;
     this.demographicsTable = demographicsTable;

@@ -1,6 +1,7 @@
 package com.discovery.feedback.rest;
 
 import com.discovery.feedback.model.HBaseDataModel;
+import com.discovery.feedback.model.MatrixBackedDataModel;
 import org.apache.mahout.cf.taste.common.TasteException;
 
 import javax.ws.rs.GET;
@@ -11,6 +12,7 @@ public class Users {
 
   @GET
   public String getNumItems() throws TasteException {
-    return String.valueOf(new HBaseDataModel().getNumItems());
+    return "";
+    //return String.valueOf(new MatrixBackedDataModel().getNumItems());
   }
 }
