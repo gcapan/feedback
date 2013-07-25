@@ -1,10 +1,5 @@
 package com.discovery.feedback.model;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
 import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.Refreshable;
@@ -51,15 +46,15 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   }
 
 
-  //This is further going to be used to create item cooccurrence matrix
-  public void persist(Configuration configuration, Path path) throws IOException {
-    SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(configuration), configuration, path,
-      LongWritable.class, VectorWritable.class);
-    for(long userId:ids[0].elements()){
-      writer.append(userId, new VectorWritable(userHistory.viewRow(usersMap.get(userId))));
-    }
-    writer.close();
-  }
+//  //This is further going to be used to create item cooccurrence matrix
+//  public void persist(Configuration configuration, Path path) throws IOException {
+//    SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(configuration), configuration, path,
+//      LongWritable.class, VectorWritable.class);
+//    for(long userId:ids[0].elements()){
+//      writer.append(userId, new VectorWritable(userHistory.viewRow(usersMap.get(userId))));
+//    }
+//    writer.close();
+//  }
 
   //Call that to iterate over all preferences such that:
   //for all items{
@@ -96,7 +91,7 @@ public class MatrixBackedDataModel extends AbstractDataModel {
     FastIDSet items = new FastIDSet(preferencesVector.getNumNonZeroElements());
 
     for (Vector.Element e : preferencesVector.nonZeroes()) {
-      items.add(ids[1].get(e.index()));
+      items.add(e.index());
     }
     return items;
   }

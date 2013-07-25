@@ -1,6 +1,8 @@
 package com.discovery.feedback.model;
 
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.common.FastIDSet;
+import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.model.GenericPreference;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
@@ -44,7 +46,19 @@ public class MatrixBackedDataModelTest {
     assertEquals(4f, dataModel.getPreferenceValue(9, 23), 0);
     assertEquals(5f, dataModel.getPreferenceValue(12, 100), 0);
 
+  }
 
+  @Test
+  public void testGetItemsFromUser() throws TasteException {
+    FastIDSet user9Items = dataModel.getItemIDsFromUser(9);
+    assertTrue(user9Items.contains(100));
+    assertTrue(user9Items.contains(200));
+    assertTrue(user9Items.contains(23));
+
+    FastIDSet user12Items = dataModel.getItemIDsFromUser(12);
+    assertTrue(user12Items.contains(100));
+    assertTrue(!user12Items.contains(200));
+    assertTrue(user12Items.contains(23));
   }
 
   @Test
