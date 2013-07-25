@@ -4,21 +4,18 @@ import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.GenericPreference;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
-import org.apache.mahout.cf.taste.impl.TasteTestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Iterator;
-
-
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@author} gcapan
  */
-public class MatrixBackedDataModelTest extends TasteTestCase {
+public class MatrixBackedDataModelTest {
   private MatrixBackedDataModel dataModel;
+
   @Before
   public void createDataModel() throws TasteException {
     dataModel = new MatrixBackedDataModel(2, 3, 200, 12);
@@ -31,7 +28,7 @@ public class MatrixBackedDataModelTest extends TasteTestCase {
   }
 
   @Test
-  public void testGetPreference() throws TasteException{
+  public void testGetPreference() throws TasteException {
 
     PreferenceArray user9Preferences = dataModel.getPreferencesFromUser(9);
     assertTrue(user9Preferences.hasPrefWithItemID(100));
@@ -51,7 +48,7 @@ public class MatrixBackedDataModelTest extends TasteTestCase {
   }
 
   @Test
-  public void testIterator() throws TasteException{
+  public void testIterator() throws TasteException {
     Preference[] expected = new Preference[]{
        new GenericPreference(12, 23, 1.0f),
        new GenericPreference(9, 23, 4.0f),
@@ -60,7 +57,7 @@ public class MatrixBackedDataModelTest extends TasteTestCase {
        new GenericPreference(9, 200, 4.0f)
     };
     int i = 0;
-    for(Preference preference:dataModel.preferences()){
+    for (Preference preference : dataModel.preferences()) {
 //      System.out.println(preference.getUserID()+", "+preference.getItemID()+", "+preference.getValue());
       assertTrue(preference.getUserID() == expected[i].getUserID());
       assertTrue(preference.getItemID() == expected[i].getItemID());
