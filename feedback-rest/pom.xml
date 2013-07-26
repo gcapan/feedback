@@ -18,6 +18,7 @@
 
   <properties>
     <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+    <glassfish.directory>/Users/ikeskin/dev/glassfish4/glassfish</glassfish.directory>
   </properties>
 
   <dependencies>
@@ -66,7 +67,7 @@
         <configuration>
           <app>target/${project.artifactId}-${project.version}</app>
           <port>8282</port>
-          <contextRoot>${project.artifactId}</contextRoot>
+          <contextRoot>/</contextRoot>
         </configuration>
         <dependencies>
           <dependency>
@@ -80,6 +81,22 @@
             <version>4.0</version>
           </dependency>
         </dependencies>
+        <executions>
+          <execution>
+            <id>admin</id>
+            <phase>package</phase>
+            <goals>
+              <goal>admin</goal>
+            </goals>
+            <configuration>
+              <commands>
+                <param>create-jms-resource --restype javax.jms.Queue --property imqDestinationName=feedbackQueue
+                  jms/feedbackQueue
+                </param>
+              </commands>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -105,6 +122,28 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.glassfish.maven.plugin</groupId>
+        <artifactId>maven-glassfish-plugin</artifactId>
+        <version>2.1</version>
+        <configuration>
+          <glassfishDirectory>${glassfish.directory}</glassfishDirectory>
+          <user>admin</user>
+          <passwordFile>${glassfish.directory}/domains/domain1/config/domain-passwords</passwordFile>
+          <debug>true</debug>
+          <domain>
+            <name>domain1</name>
+            <httpPort>8080</httpPort>
+            <adminPort>4848</adminPort>
+          </domain>
+          <components>
+            <component>
+              <name>${project.artifactId}</name>
+              <artifact>${project.build.directory}/${project.build.finalName}.war</artifact>
+            </component>
+          </components>
+        </configuration>
       </plugin>
     </plugins>
   </build>
