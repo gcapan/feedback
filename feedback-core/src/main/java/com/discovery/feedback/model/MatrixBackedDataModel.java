@@ -1,5 +1,6 @@
 package com.discovery.feedback.model;
 
+import com.discovery.feedback.model.history.History;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
 import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.Refreshable;
@@ -9,9 +10,11 @@ import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.model.AbstractDataModel;
 import org.apache.mahout.cf.taste.impl.model.GenericItemPreferenceArray;
+import org.apache.mahout.cf.taste.impl.model.GenericPreference;
 import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
+import org.apache.mahout.common.Pair;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseRowMatrix;
 import org.apache.mahout.math.Vector;
@@ -25,54 +28,30 @@ import java.util.Iterator;
 
 public class MatrixBackedDataModel extends AbstractDataModel {
   //for fast access to a user history
-  private Matrix userHistory;
-
+  private History userHistory;
   //for fast access to an item history
-  private Matrix itemHistory;
-  private boolean hasPreferenceValue = false;
-  private OpenLongIntHashMap usersMap;
-  private OpenLongIntHashMap itemsMap;
-  private LongArrayList[] ids;
-  private int userIndex = 0;
-  private int itemIndex = 0;
+  private History itemHistory;
 
 
-  public MatrixBackedDataModel(int maxNoOfUsers, int maxNoOfItems, int maxItemId, int maxUserId) {
-    ids = new LongArrayList[]{new LongArrayList(maxNoOfUsers), new LongArrayList(maxNoOfItems)};
-    userHistory = new SparseRowMatrix(maxNoOfUsers, maxItemId, true);
-    itemHistory = new SparseRowMatrix(maxNoOfItems, maxUserId, true);
-    usersMap = new OpenLongIntHashMap(maxNoOfUsers);
-    itemsMap = new OpenLongIntHashMap(maxNoOfItems);
+  public MatrixBackedDataModel(History userHistory, History itemHistory) {
+    this.userHistory = userHistory;
+    this.itemHistory = itemHistory;
   }
 
 
-//  //This is further going to be used to create item cooccurrence matrix
-//  public void persist(Configuration configuration, Path path) throws IOException {
-//    SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(configuration), configuration, path,
-//      LongWritable.class, VectorWritable.class);
-//    for(long userId:ids[0].elements()){
-//      writer.append(userId, new VectorWritable(userHistory.viewRow(usersMap.get(userId))));
-//    }
-//    writer.close();
-//  }
-
-  //Call that to iterate over all preferences such that:
-  //for all items{
-  //    for all users preferred this item{
-  //       ...
   public Iterable<Preference> preferences() throws TasteException {
     return new AllIterable();
   }
 
   @Override
   public LongPrimitiveIterator getUserIDs() throws TasteException {
-    return new LongArrayListIterator(0);
+    return userHistory.allIds();
   }
 
 
   @Override
   public PreferenceArray getPreferencesFromUser(long userID) throws TasteException {
-    Vector preferencesVector = userHistory.viewRow(usersMap.get(userID));
+    Vector preferencesVector = userHistory.getPreferencesFor(userID, false);
     PreferenceArray preferenceArray = new GenericUserPreferenceArray(preferencesVector.getNumNonZeroElements());
     preferenceArray.setUserID(0, userID);
 
@@ -87,23 +66,17 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public FastIDSet getItemIDsFromUser(long userID) throws TasteException {
-    Vector preferencesVector = userHistory.viewRow(usersMap.get(userID));
-    FastIDSet items = new FastIDSet(preferencesVector.getNumNonZeroElements());
-
-    for (Vector.Element e : preferencesVector.nonZeroes()) {
-      items.add(e.index());
-    }
-    return items;
+    return userHistory.getIdsFor(userID);
   }
 
   @Override
   public LongPrimitiveIterator getItemIDs() throws TasteException {
-    return new LongArrayListIterator(1);
+    return itemHistory.allIds();
   }
 
   @Override
   public PreferenceArray getPreferencesForItem(long itemID) throws TasteException {
-    Vector preferencesVector = itemHistory.viewRow(itemsMap.get(itemID));
+    Vector preferencesVector = itemHistory.getPreferencesFor(itemID, false);
     PreferenceArray preferenceArray = new GenericItemPreferenceArray(preferencesVector.getNumNonZeroElements());
     preferenceArray.setItemID(0, itemID);
 
@@ -119,7 +92,7 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public Float getPreferenceValue(long userID, long itemID) throws TasteException {
-    return (float) userHistory.getQuick(usersMap.get(userID), (int)itemID);
+    return (float) userHistory.get(userID, itemID);
   }
 
   @Override
@@ -129,159 +102,72 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public int getNumItems() throws TasteException {
-    return ids[1].size();
+    return itemHistory.getNumEntities();
   }
 
   @Override
   public int getNumUsers() throws TasteException {
-    return ids[0].size();
+    return userHistory.getNumEntities();
   }
 
   @Override
   public int getNumUsersWithPreferenceFor(long itemID) throws TasteException {
-    return itemHistory.viewRow(itemsMap.get(itemID)).getNumNonZeroElements();
+    return itemHistory.getPreferencesFor(itemID, false).getNumNonZeroElements();
   }
 
   @Override
   public int getNumUsersWithPreferenceFor(long itemID1, long itemID2) throws TasteException {
-    Vector i1 = itemHistory.viewRow(itemsMap.get(itemID1));
-    Vector i2 = itemHistory.viewRow(itemsMap.get(itemID2));
+    return itemHistory.getCommons(itemID1, itemID2);
+  }
 
-    Iterator<Vector.Element> i1Iterator = i1.nonZeroes().iterator();
-    Iterator<Vector.Element> i2Iterator = i2.nonZeroes().iterator();
-    int count = 0;
-    int u1 = -1;
-    int u2 = -1;
-    boolean advance1 = true;
-    boolean advance2 = false;
-
-    while (i1Iterator.hasNext() && i2Iterator.hasNext()) {
-      if (advance1) {
-        u1 = i1Iterator.next().index();
-      }
-      if (advance2) {
-        u2 = i2Iterator.next().index();
-      }
-      advance1 = false;
-      advance2 = false;
-
-      if (u1 == u2) {
-        count++;
-      } else if (u1 < u2) {
-        advance1 = true;
-      } else {
-        advance2 = true;
-      }
-    }
-    return count;
+  public int getNumItemsWithPreferenceFrom(long userID1, long userID2) throws TasteException {
+    return userHistory.getCommons(userID1, userID2);
   }
 
   @Override
-  //This should be atomic
   public void setPreference(long userID, long itemID, float value) throws TasteException {
-    hasPreferenceValue = true;
-    LongArrayList users = ids[0];
-    LongArrayList items = ids[1];
-    if (!users.contains(userID)) {
-      ids[0].add(userID);
-      usersMap.put(userID, userIndex++);
-    }
-    if (!items.contains(itemID)) {
-      ids[1].add(itemID);
-      itemsMap.put(itemID, itemIndex++);
-    }
-    userHistory.setQuick(usersMap.get(userID), (int)itemID, value);
-    itemHistory.setQuick(itemsMap.get(itemID), (int)userID, value);
+    throw new UnsupportedOperationException("Do this for individual history matrices");
   }
 
   @Override
-  //This should be atomic
   public void removePreference(long userID, long itemID) throws TasteException {
-    if (!usersMap.containsKey(userID)) {
-      throw new NoSuchUserException();
-    }
-    if (!itemsMap.containsKey(itemID)) {
-      throw new NoSuchItemException();
-    }
-    userHistory.setQuick(usersMap.get(userID), (int)itemID, 0);
-    itemHistory.setQuick(itemsMap.get(itemID), (int)userID, 0);
+    throw new UnsupportedOperationException("Do this for individual history matrices");
   }
 
   @Override
   public boolean hasPreferenceValues() {
-    return this.hasPreferenceValue;
+    return true;
   }
 
   @Override
   public void refresh(Collection<Refreshable> alreadyRefreshed) {
   }
 
-  private final class LongArrayListIterator extends AbstractLongPrimitiveIterator {
-    private int index = 0;
-    private int i;
-
-    LongArrayListIterator(int i) {
-      this.i = i;
-    }
-
-    @Override
-    public long nextLong() {
-      return ids[i].get(index++);
-    }
-
-    @Override
-    public long peek() {
-      return ids[i].get(index);
-    }
-
-    @Override
-    public void skip(int n) {
-      index += n;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return index < ids[i].size();
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-  }
 
   private class AllIterable implements Iterable<Preference> {
-    int index = 0;
-    int index2 = 0;
-    PreferenceArray currentItemPreferencesArray = new GenericItemPreferenceArray(0);
-
     @Override
     public Iterator<Preference> iterator() {
-      return new AllIterator();
+      return new AllIterator(itemHistory.allPreferences().iterator());
     }
 
     private class AllIterator implements Iterator<Preference> {
+
+      private final Iterator<Pair<Long, Vector.Element>> underlyingIterator;
+
+      public AllIterator(Iterator<Pair<Long, Vector.Element>> iterator) {
+        this.underlyingIterator = iterator;
+        //To change body of created methods use File | Settings | File Templates.
+      }
+
       @Override
       public boolean hasNext() {
-        if (index2 < currentItemPreferencesArray.length()) {
-          return true;
-        }
-        return index < ids[1].size();
+        return underlyingIterator.hasNext();
       }
 
       @Override
       public Preference next() {
-        try {
-          if (!(index2 < currentItemPreferencesArray.length())) {
-            long item = ids[1].get(index++);
-            index2 = 0;
-            currentItemPreferencesArray = getPreferencesForItem(item);
-          }
-          return currentItemPreferencesArray.get(index2++);
-
-        } catch (TasteException te) {
-          throw new RuntimeException(te);
-        }
+        Pair<Long, Vector.Element> next = underlyingIterator.next();
+        return new GenericPreference(next.getSecond().index(), next.getFirst(), (float) next.getSecond().get());
       }
 
       @Override
