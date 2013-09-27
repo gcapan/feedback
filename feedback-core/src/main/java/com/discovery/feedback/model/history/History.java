@@ -12,8 +12,10 @@ import org.apache.mahout.math.list.DoubleArrayList;
 import org.apache.mahout.math.list.LongArrayList;
 import org.apache.mahout.math.map.OpenLongDoubleHashMap;
 import org.apache.mahout.math.map.OpenLongIntHashMap;
+import org.apache.mahout.math.set.OpenLongHashSet;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * {@author} gcapan
@@ -28,13 +30,14 @@ public class History {
     ids = new LongArrayList(maxNoOfEntities);
     history = new SparseRowMatrix(maxNoOfEntities, columnSize);
     idMap = new OpenLongIntHashMap(maxNoOfEntities);
+
   }
 
   public int getNumEntities(){
     return ids.size();
   }
 
-  public LongPrimitiveIterator allIds() {
+  public LongPrimitiveIterator allFroms() {
     return new LongArrayListIterator();
   }
 
@@ -46,12 +49,12 @@ public class History {
     return new MatrixIterable();
   }
 
-  public Vector getPreferencesFor(long id, boolean createNew) {
+  public Vector getPreferencesFrom(long id, boolean createNew) {
     Vector v = history.viewRow(idMap.get(id));
     return createNew ? v.clone() : v;
   }
 
-  public FastIDSet getIdsFor(long id) {
+  public FastIDSet getIdsFrom(long id) {
     Vector v = history.viewRow(idMap.get(id));
     FastIDSet idSet = new FastIDSet(v.getNumNonZeroElements());
     for (Vector.Element e : v.nonZeroes()) {
@@ -75,7 +78,7 @@ public class History {
 
   public double similarity(Class<? extends VectorSimilarityMeasure> similarityClass, long id1, long id2,
                            boolean normalize) {
-    return similarity(similarityClass, history.viewRow(idMap.get(id1)).clone(), id2, normalize);
+    return similarity(similarityClass, this.getPreferencesFrom(id1, true), id2, normalize);
   }
 
   public double similarity(Class<? extends VectorSimilarityMeasure> similarityClass, Vector first, long id2,
@@ -83,7 +86,7 @@ public class History {
     VectorSimilarityMeasure similarityMeasure = ClassUtils.instantiateAs(similarityClass,
        VectorSimilarityMeasure.class);
 
-    Vector second = history.viewRow(idMap.get(id2)).clone();
+    Vector second = this.getPreferencesFrom(id2, true);
 
     int nonZerosFirst = first.getNumNonZeroElements();
     int nonZerosSecond = second.getNumNonZeroElements();
@@ -95,12 +98,12 @@ public class History {
     }
   }
 
-  public void set(long entity, long to, double value) {
-    if (!idMap.containsKey(entity)) {
-      ids.add(entity);
-      idMap.put(entity, index++);
+  public void set(long from, long to, double value) {
+    if (!idMap.containsKey(from)) {
+      ids.add(from);
+      idMap.put(from, index++);
     }
-    history.setQuick(idMap.get(entity), (int) to, value);
+    history.setQuick(idMap.get(from), (int) to, value);
   }
 
   public boolean checkAndSet(long entity, long to, double value, double oldValue) {
@@ -111,9 +114,9 @@ public class History {
     return false;
   }
 
-  public double get(long entity, long to) {
-    if (idMap.containsKey(entity)) {
-      return history.getQuick(idMap.get(entity), (int) to);
+  public double get(long from, long to) {
+    if (idMap.containsKey(from)) {
+      return history.getQuick(idMap.get(from), (int) to);
     }
     return 0;
   }
@@ -153,7 +156,7 @@ public class History {
     int i1 = -1;
     int i2 = -1;
 
-    while (firstIterator.hasNext() && secondIterator.hasNext()) {
+    while (firstIterator.hasNext() || secondIterator.hasNext()) {
       if (advance1) {
         i1 = firstIterator.next().index();
       }
@@ -170,39 +173,41 @@ public class History {
       } else {
         advance2 = true;
       }
+      if(advance1 && !firstIterator.hasNext()) break;
+      if(advance2 && !secondIterator.hasNext()) break;
     }
     return similarityMeasure.similarity(dot, normFirst, normSecond, first.getNumNonZeroElements());
   }
 
   private final class LongArrayListIterator extends AbstractLongPrimitiveIterator {
-    private int index = 0;
-    private int i;
+    private int i = 0;
 
     @Override
     public long nextLong() {
-      return ids.get(index++);
+      return ids.get(i++);
     }
 
     @Override
     public long peek() {
-      return ids.get(index);
+      return ids.get(i);
     }
 
     @Override
     public void skip(int n) {
-      index += n;
+      i += n;
     }
 
     @Override
     public boolean hasNext() {
-      return index < ids.size();
+      return i < ids.size();
     }
 
     @Override
     public void remove() {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("Deleting while iterating not allowed");
     }
   }
+
 
   private final class AllIterable implements Iterable<Pair<Long, Vector.Element>> {
     int processedSoFar = -1;
@@ -220,26 +225,30 @@ public class History {
 
       @Override
       public boolean hasNext() {
-        if (processedSoFar < history.numRows()-1) {
-          return true;
+        if(!currentItemIterator.hasNext()){
+          if(processedSoFar>=history.numRows()-1){
+            return false;
+          }
+          else{
+            current = history.viewRow(++processedSoFar);
+            currentItemIterator = current.nonZeroes().iterator();
+            return currentItemIterator.hasNext();
+          }
+
         }
-        else return currentItemIterator.hasNext();
+        return true;
       }
 
       @Override
       public Pair<Long, Vector.Element> next() {
-        if (!(currentItemIterator.hasNext())) {
-          current = history.viewRow(++processedSoFar);
-          currentItemIterator = current.nonZeroes().iterator();
-        }
         Vector.Element e = currentItemIterator.next();
         long from = ids.get(processedSoFar);
-        return org.apache.mahout.common.Pair.of(from, e);
+        return Pair.of(from, e);
       }
 
       @Override
       public void remove() {
-        throw new UnsupportedOperationException("Deleting while iterating not supported");
+        throw new UnsupportedOperationException("Deleting while iterating not allowed");
       }
     }
   }

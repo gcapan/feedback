@@ -1,11 +1,8 @@
 package com.discovery.feedback.model;
 
 import com.discovery.feedback.model.history.History;
-import org.apache.mahout.cf.taste.common.NoSuchItemException;
-import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
-import org.apache.mahout.cf.taste.impl.common.AbstractLongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.model.AbstractDataModel;
@@ -15,14 +12,8 @@ import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.common.Pair;
-import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.SparseRowMatrix;
 import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.VectorWritable;
-import org.apache.mahout.math.list.LongArrayList;
-import org.apache.mahout.math.map.OpenLongIntHashMap;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -45,13 +36,13 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public LongPrimitiveIterator getUserIDs() throws TasteException {
-    return userHistory.allIds();
+    return userHistory.allFroms();
   }
 
 
   @Override
   public PreferenceArray getPreferencesFromUser(long userID) throws TasteException {
-    Vector preferencesVector = userHistory.getPreferencesFor(userID, false);
+    Vector preferencesVector = userHistory.getPreferencesFrom(userID, false);
     PreferenceArray preferenceArray = new GenericUserPreferenceArray(preferencesVector.getNumNonZeroElements());
     preferenceArray.setUserID(0, userID);
 
@@ -66,17 +57,17 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public FastIDSet getItemIDsFromUser(long userID) throws TasteException {
-    return userHistory.getIdsFor(userID);
+    return userHistory.getIdsFrom(userID);
   }
 
   @Override
   public LongPrimitiveIterator getItemIDs() throws TasteException {
-    return itemHistory.allIds();
+    return itemHistory.allFroms();
   }
 
   @Override
   public PreferenceArray getPreferencesForItem(long itemID) throws TasteException {
-    Vector preferencesVector = itemHistory.getPreferencesFor(itemID, false);
+    Vector preferencesVector = itemHistory.getPreferencesFrom(itemID, false);
     PreferenceArray preferenceArray = new GenericItemPreferenceArray(preferencesVector.getNumNonZeroElements());
     preferenceArray.setItemID(0, itemID);
 
@@ -112,7 +103,7 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public int getNumUsersWithPreferenceFor(long itemID) throws TasteException {
-    return itemHistory.getPreferencesFor(itemID, false).getNumNonZeroElements();
+    return itemHistory.getPreferencesFrom(itemID, false).getNumNonZeroElements();
   }
 
   @Override
