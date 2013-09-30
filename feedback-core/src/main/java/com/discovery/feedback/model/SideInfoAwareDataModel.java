@@ -1,125 +1,93 @@
 package com.discovery.feedback.model;
 
-import org.apache.mahout.cf.taste.common.Refreshable;
-import org.apache.mahout.cf.taste.common.TasteException;
+import com.discovery.contentdb.matrix.Content;
+import com.discovery.contentdb.matrix.exception.ContentException;
+import com.discovery.feedback.model.history.History;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
-import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
-import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.math.Vector;
+import org.apache.solr.client.solrj.SolrQuery;
 
 import java.util.Collection;
 
 /**
  * {@author} gcapan
  */
-public class SideInfoAwareDataModel{// extends MatrixBackedDataModel {
+public class SideInfoAwareDataModel extends MatrixBackedDataModel {
+  Content userSideInfo;
+  Content itemSideInfo;
 
-//  public DataModel dataModel;
-//  public ContentTable contentTable;
-//  public DemographicsTable demographicsTable;
-//  public final int MAX = 100;
-//
-//  public SideInfoAwareDataModel(int maxNoOfUsers, int maxNoOfItems, int maxUserId, int maxItemId) {
-//    super(maxNoOfUsers, maxNoOfItems, maxUserId, maxItemId);    //To change body of overridden methods use File | Settings |
-//    // File Templates.
-//  }
-//
-//  public SideInfoAwareDataModel(int maxNoOfUsers, int maxNoOfItems, int maxUserId, int maxItemId, DataModel base,
-//                                ContentTable contentTable, DemographicsTable demographicsTable) {
-//    this(maxNoOfUsers, maxNoOfItems, maxUserId, maxItemId);
-//    this.dataModel = base;
-//    this.contentTable = contentTable;
-//    this.demographicsTable = demographicsTable;
-//  }
-//
-//
-//
-//  public void addUser(long user, Vector demographics){
-//    demographicsTable.add(user, demographics);
-//  }
-//  public void addItem(long item, Vector content){
-//    contentTable.add(item, content);
-//  }
-//
-//
-//  public LongPrimitiveIterator getUserIDs(Vector matches) throws TasteException{
-//    return demographicsTable.order(getUserIDs(), matches, MAX);
-//  }
-//  public LongPrimitiveIterator getItemIDs(Vector matches) throws TasteException {
-//    return contentTable.order(getItemIDs(), matches, MAX);
-//  }
-//
-//  public FastIDSet getItemIDsFromUser(long user, Vector itemMatches)throws TasteException {
-//    return contentTable.order(getItemIDsFromUser(user),itemMatches);
-//  }
-//
-//  public void refresh(Collection<Refreshable> alreadyRefreshed) {
-//    dataModel.refresh(alreadyRefreshed);
-//  }
-//
-//  public LongPrimitiveIterator getUserIDs() throws TasteException {
-//    return dataModel.getUserIDs();
-//  }
-//
-//  public PreferenceArray getPreferencesFromUser(long userID) throws TasteException {
-//    return dataModel.getPreferencesFromUser(userID);
-//  }
-//
-//  public FastIDSet getItemIDsFromUser(long userID) throws TasteException {
-//    return dataModel.getItemIDsFromUser(userID);
-//  }
-//
-//  public LongPrimitiveIterator getItemIDs() throws TasteException {
-//    return dataModel.getItemIDs();
-//  }
-//
-//  public PreferenceArray getPreferencesForItem(long itemID) throws TasteException {
-//    return dataModel.getPreferencesForItem(itemID);
-//  }
-//
-//  public Float getPreferenceValue(long userID, long itemID) throws TasteException {
-//    return dataModel.getPreferenceValue(userID, itemID);
-//  }
-//
-//  public Long getPreferenceTime(long userID, long itemID) throws TasteException {
-//    return dataModel.getPreferenceTime(userID, itemID);
-//  }
-//
-//  public int getNumItems() throws TasteException {
-//    return dataModel.getNumItems();
-//  }
-//
-//  public int getNumUsers() throws TasteException {
-//    return dataModel.getNumUsers();
-//  }
-//
-//  public int getNumUsersWithPreferenceFor(long itemID) throws TasteException {
-//    return dataModel.getNumUsersWithPreferenceFor(itemID);
-//  }
-//
-//  public int getNumUsersWithPreferenceFor(long itemID1, long itemID2) throws TasteException {
-//    return dataModel.getNumUsersWithPreferenceFor(itemID1, itemID2);
-//  }
-//
-//  public void setPreference(long userID, long itemID, float value) throws TasteException {
-//    dataModel.setPreference(userID, itemID, value);
-//  }
-//
-//  public void removePreference(long userID, long itemID) throws TasteException {
-//    dataModel.removePreference(userID, itemID);
-//  }
-//
-//  public boolean hasPreferenceValues() {
-//    return dataModel.hasPreferenceValues();
-//  }
-//
-//  public float getMaxPreference() {
-//    return dataModel.getMaxPreference();
-//  }
-//
-//  public float getMinPreference() {
-//    return dataModel.getMinPreference();
-//  }
 
+  public SideInfoAwareDataModel(History userHistory, History itemHistory, Content userSideInfo,
+                                Content itemSideInfo) {
+    super(userHistory, itemHistory);
+    this.userSideInfo = userSideInfo;
+    this.itemSideInfo = itemSideInfo;
+  }
+
+  public void addUser (long user, Vector demographics) {
+    userSideInfo.assignRow((int)user, demographics);
+  }
+
+  public void addItem (long item, Vector content) {
+    itemSideInfo.assignRow((int) item, content);
+  }
+
+  public FastIDSet getUsers(String contentDimension, String keyword, int maxResults) throws ContentException{
+    return userSideInfo.getCandidates(contentDimension, keyword, maxResults);
+  }
+  public FastIDSet getUsers(String contentDimension, SolrQuery solrQuery, int maxResults) throws ContentException{
+    return userSideInfo.getCandidates(contentDimension, solrQuery, maxResults);
+  }
+
+  public FastIDSet getUsers(String contentDimension, String keyword, double latitude,
+                            double longitude, int rangeInKm) throws ContentException{
+    return userSideInfo.getCandidates(contentDimension, keyword, latitude, longitude, rangeInKm);
+  }
+
+  public FastIDSet getItems(String contentDimension, String keyword, int maxResults) throws ContentException{
+    return itemSideInfo.getCandidates(contentDimension, keyword, maxResults);
+  }
+
+  public FastIDSet getItems(String contentDimension, SolrQuery solrQuery, int maxResults) throws ContentException{
+    return itemSideInfo.getCandidates(contentDimension, solrQuery, maxResults);
+  }
+
+  public FastIDSet getItems(String contentDimension, String keyword, double latitude,
+                            double longitude, int rangeInKm) throws ContentException{
+    return itemSideInfo.getCandidates(contentDimension, keyword, latitude, longitude, rangeInKm);
+  }
+
+  public Vector getUserVector(long user) {
+    return userSideInfo.viewRow((int) user);
+  }
+
+  public double getQuickFromUsers(long user, int column){
+    return userSideInfo.getQuick((int) user, column);
+  }
+
+  /**
+   * @param user The user id
+   * @param label Here if the field of interest is text or multinomial, label should be the word/category of interest.
+   *              If the field is boolean or numerical, label should be the field name
+   */
+  public double getQuickFromUsers(long user, String label ){
+    return userSideInfo.getQuick((int) user, userSideInfo.getColumnLabelBindings().get(label));
+  }
+
+  public Vector getItemVector(long item) {
+    return itemSideInfo.viewRow((int) item);
+  }
+
+  public double getQuickFromItems(long item, int column) {
+    return itemSideInfo.getQuick((int) item, column);
+  }
+
+  /**
+   * @param item The item id
+   * @param label Here if the field of interest is text or multinomial, label should be the word/category of interest.
+   *              If the field is boolean or numerical, label should be the field name
+   */
+  public double getQuickFromItems(long item, String label) {
+    return itemSideInfo.getQuick((int) item, itemSideInfo.getColumnLabelBindings().get(label));
+  }
 }

@@ -11,6 +11,7 @@
     <core.version>0.1-SNAPSHOT</core.version>
     <rest.version>0.1-SNAPSHOT</rest.version>
     <mahout.version>0.9-SNAPSHOT</mahout.version>
+    <contentdb.version>0.1-SNAPSHOT</contentdb.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -39,6 +40,11 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>com.discovery.contentdb</groupId>
+      <artifactId>contentdb</artifactId>
+      <version>${contentdb.version}</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
