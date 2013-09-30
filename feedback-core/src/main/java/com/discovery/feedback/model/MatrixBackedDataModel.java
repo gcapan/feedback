@@ -13,6 +13,9 @@ import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.common.Pair;
 import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
+import org.apache.mahout.math.list.DoubleArrayList;
+import org.apache.mahout.math.list.LongArrayList;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -55,10 +58,32 @@ public class MatrixBackedDataModel extends AbstractDataModel {
     return preferenceArray;
   }
 
+  /**
+   * sorts preferences of a user descending (to get favorite items first).
+   * @param userId The user id
+   * @param emptyIds This will be filled with ordered list of items that the user rated, favorite item first.
+   * @param emptyValues This will be filled with rating values for the corresponding indices of emptyIds list
+   */
+  public void orderPreferencesFromUserDesc (long userId, LongArrayList emptyIds, DoubleArrayList emptyValues){
+    userHistory.sortByValue(userId, emptyIds, emptyValues);
+  }
+
   @Override
   public FastIDSet getItemIDsFromUser(long userID) throws TasteException {
     return userHistory.getIdsFrom(userID);
   }
+
+  public int getNumItemsRatedBy(long user1, long user2) throws TasteException {
+    return userHistory.getCommons(user1, user2);
+  }
+
+  public double getUserSimilarity(Class<VectorSimilarityMeasure> similarityMeasureClass, long user1,
+                                  long user2, boolean normalize) throws TasteException{
+    return userHistory.similarity(similarityMeasureClass, user1, user2, normalize);
+
+  }
+
+
 
   @Override
   public LongPrimitiveIterator getItemIDs() throws TasteException {
@@ -79,6 +104,26 @@ public class MatrixBackedDataModel extends AbstractDataModel {
     }
     return preferenceArray;
 
+  }
+
+  /**
+   * sorts preferences of a user ascending.
+   * @param itemId The item id
+   * @param emptyIds This will be filled with ordered list of users those rated that item,  most interested user last.
+   * @param emptyValues This will be filled with rating values for the corresponding indices of emptyIds list
+   */
+  public void orderUsersPreferredTheItemAsc (long itemId, LongArrayList emptyIds, DoubleArrayList emptyValues){
+    itemHistory.sortByValue(itemId, emptyIds, emptyValues);
+  }
+
+  public int getNumUsersRated(long item1, long item2) throws TasteException {
+    return itemHistory.getCommons(item1, item2);
+  }
+
+
+  public double getItemSimilarity(Class<VectorSimilarityMeasure> similarityMeasureClass, long item1,
+                                  long item2, boolean normalize) throws TasteException{
+    return itemHistory.similarity(similarityMeasureClass, item1, item2, normalize);
   }
 
   @Override
