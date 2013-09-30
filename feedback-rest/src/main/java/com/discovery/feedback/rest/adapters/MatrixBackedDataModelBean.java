@@ -1,14 +1,13 @@
 package com.discovery.feedback.rest.adapters;
 
 import com.discovery.feedback.model.MatrixBackedDataModel;
+import com.discovery.feedback.model.history.History;
 
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 
-//@Startup
 @Singleton
 public class MatrixBackedDataModelBean extends MatrixBackedDataModel {
   public MatrixBackedDataModelBean() {
-    super(1000, 1000, 1000, 1000);
+    super(new History(1000, 1000), new History(1000, 1000));
   }
 }
