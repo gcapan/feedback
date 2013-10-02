@@ -59,12 +59,12 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   }
 
   /**
-   * sorts preferences of a user descending (to get favorite items first).
+   * sorts preferences of a user ascending.
    * @param userId The user id
-   * @param emptyIds This will be filled with ordered list of items that the user rated, favorite item first.
+   * @param emptyIds This will be filled with ordered list of items that the user rated, favorite item last.
    * @param emptyValues This will be filled with rating values for the corresponding indices of emptyIds list
    */
-  public void orderPreferencesFromUserDesc (long userId, LongArrayList emptyIds, DoubleArrayList emptyValues){
+  public void orderPreferencesFromUserAsc(long userId, LongArrayList emptyIds, DoubleArrayList emptyValues){
     userHistory.sortByValue(userId, emptyIds, emptyValues);
   }
 
