@@ -33,17 +33,20 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   }
 
 
+  //no need to expose in Web
   public Iterable<Preference> preferences() throws TasteException {
     return new AllIterable();
   }
 
   @Override
+  //expose in Web with pagination
   public LongPrimitiveIterator getUserIDs() throws TasteException {
     return userHistory.allFroms();
   }
 
 
   @Override
+  //see orderPreferencesFromUserAsc, it might be handier
   public PreferenceArray getPreferencesFromUser(long userID) throws TasteException {
     Vector preferencesVector = userHistory.getPreferencesFrom(userID, false);
     PreferenceArray preferenceArray = new GenericUserPreferenceArray(preferencesVector.getNumNonZeroElements());
@@ -69,14 +72,17 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   }
 
   @Override
+  //expose in web
   public FastIDSet getItemIDsFromUser(long userID) throws TasteException {
     return userHistory.getIdsFrom(userID);
   }
 
+  //expose in web
   public int getNumItemsRatedBy(long user1, long user2) throws TasteException {
     return userHistory.getCommons(user1, user2);
   }
 
+  //expose in web
   public double getUserSimilarity(Class<VectorSimilarityMeasure> similarityMeasureClass, long user1,
                                   long user2, boolean normalize) throws TasteException{
     return userHistory.similarity(similarityMeasureClass, user1, user2, normalize);
@@ -86,11 +92,13 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
 
   @Override
+  //expose in web with pagination
   public LongPrimitiveIterator getItemIDs() throws TasteException {
     return itemHistory.allFroms();
   }
 
   @Override
+  //see orderUsersPreferredTheItemAsc, it might be handier
   public PreferenceArray getPreferencesForItem(long itemID) throws TasteException {
     Vector preferencesVector = itemHistory.getPreferencesFrom(itemID, false);
     PreferenceArray preferenceArray = new GenericItemPreferenceArray(preferencesVector.getNumNonZeroElements());
@@ -106,6 +114,7 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   }
 
+  //expose the resulting lists in web
   /**
    * sorts preferences of a user ascending.
    * @param itemId The item id
@@ -116,17 +125,19 @@ public class MatrixBackedDataModel extends AbstractDataModel {
     itemHistory.sortByValue(itemId, emptyIds, emptyValues);
   }
 
+  //expose in web
   public int getNumUsersRated(long item1, long item2) throws TasteException {
     return itemHistory.getCommons(item1, item2);
   }
 
-
+  //expose in web
   public double getItemSimilarity(Class<VectorSimilarityMeasure> similarityMeasureClass, long item1,
                                   long item2, boolean normalize) throws TasteException{
     return itemHistory.similarity(similarityMeasureClass, item1, item2, normalize);
   }
 
   @Override
+  //expose in web
   public Float getPreferenceValue(long userID, long itemID) throws TasteException {
     return (float) userHistory.get(userID, itemID);
   }
@@ -137,31 +148,37 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   }
 
   @Override
+  //expose in web
   public int getNumItems() throws TasteException {
     return itemHistory.getNumEntities();
   }
 
   @Override
+  //expose in web
   public int getNumUsers() throws TasteException {
     return userHistory.getNumEntities();
   }
 
   @Override
+  //expose in web
   public int getNumUsersWithPreferenceFor(long itemID) throws TasteException {
     return itemHistory.getPreferencesFrom(itemID, false).getNumNonZeroElements();
   }
 
   @Override
+  //expose in web
   public int getNumUsersWithPreferenceFor(long itemID1, long itemID2) throws TasteException {
     return itemHistory.getCommons(itemID1, itemID2);
   }
 
+  //expose in web
   public int getNumItemsWithPreferenceFrom(long userID1, long userID2) throws TasteException {
     return userHistory.getCommons(userID1, userID2);
   }
 
   @Override
   public void setPreference(long userID, long itemID, float value) throws TasteException {
+
     throw new UnsupportedOperationException("Do this for individual history matrices");
   }
 
