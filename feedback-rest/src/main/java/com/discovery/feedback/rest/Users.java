@@ -13,30 +13,9 @@ import javax.ws.rs.core.MediaType;
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 public class Users {
 
-  // TODO: All REST endpoints should share the same datamodel and recommender.
+  // TODO: All REST endpoints should share the same datamodel.
   @EJB
   private MatrixBackedDataModel model;
-
-  // TODO: Move recommender to another rest endpoint.
-  //  private UserBasedRecommender recommender;
-
-//  @GET
-//  @Path("{userID}/similars")
-//  public Long[] getSimilarUsers(@PathParam("userID") long userID, @DefaultValue("10") @QueryParam("n") int n) throws TasteException {
-//    return ArrayUtils.toObject(recommender.mostSimilarUserIDs(userID, n));
-//  }
-//
-//  @GET
-//  @Path("{userID}/topN")
-//  public List<RecommendedItem> getTopN(@PathParam("userID") long userID, @DefaultValue("10") @QueryParam("n") int n) throws TasteException {
-//    return recommender.recommend(userID, n);
-//  }
-//
-//  @GET
-//  @Path("{userID}/predict/{itemID}")
-//  public Float predictRatingForItem(@PathParam("userID") long userID, @PathParam("itemID") long itemID) throws TasteException {
-//    return recommender.estimatePreference(userID, itemID);
-//  }
 
   @GET
   @Path("{userID}")

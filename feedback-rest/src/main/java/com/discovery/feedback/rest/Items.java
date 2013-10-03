@@ -16,17 +16,9 @@ import java.util.Iterator;
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 public class Items {
 
-  // TODO: All REST endpoints should share the same datamodel and recommender.
+  // TODO: All REST endpoints should share the same datamodel.
   @EJB
   private MatrixBackedDataModel model;
-  // TODO: Move recommender to another rest endpoint.
-  //  private ItemBasedRecommender recommender = new BogusRecommender();
-
-//  @GET
-//  @Path("{itemID}/similars")
-//  public List<RecommendedItem> getMostSimilarItems(@PathParam("itemID") long itemID, @DefaultValue("10") @QueryParam("n") int n) throws TasteException {
-//    return recommender.mostSimilarItems(itemID, n);
-//  }
 
   @GET
   @Path("{itemID}")
