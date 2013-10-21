@@ -7,17 +7,16 @@ import com.discovery.feedback.rest.adapters.Preference;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 
-import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.Iterator;
 
 @Path("items")
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 public class Items {
 
   // TODO: All REST endpoints should share the same datamodel.
-  @EJB
+  @Inject
   private MatrixBackedDataModel model;
 
   @GET
@@ -29,7 +28,6 @@ public class Items {
 
     if (preferencesForItem != null) {
       prefArr = new Preference[preferencesForItem.length()];
-      Iterator<org.apache.mahout.cf.taste.model.Preference> iterator = preferencesForItem.iterator();
       int i = 0;
       for (org.apache.mahout.cf.taste.model.Preference preference : preferencesForItem) {
         prefArr[i] = new Preference(preference.getUserID(), preference.getItemID(), preference.getValue());
@@ -37,12 +35,6 @@ public class Items {
       }
     }
     return prefArr;
-  }
-
-  @GET
-  @Path("{itemID}/{userID}")
-  public Float getRatingForItem(@PathParam("itemID") long itemID, @PathParam("userID") long userID) throws TasteException {
-    return model.getPreferenceValue(userID, itemID);
   }
 
   @GET
@@ -62,17 +54,5 @@ public class Items {
     } else {
       throw new IllegalArgumentException("An object of " + SideInfoAwareDataModel.class.getCanonicalName() + " is required for this operation.");
     }
-  }
-
-  @POST
-  @Path("{itemID}/{userID}")
-  public void setRatingForItem(@PathParam("itemID") long itemID, @PathParam("userID") long userID, String value) throws TasteException {
-    model.setPreference(userID, itemID, Float.parseFloat(value));
-  }
-
-  @DELETE
-  @Path("{itemID}/{userID}")
-  public void deleteItemRating(@PathParam("itemID") long itemID, @PathParam("userID") long userID) throws TasteException {
-    model.removePreference(userID, itemID);
   }
 }
