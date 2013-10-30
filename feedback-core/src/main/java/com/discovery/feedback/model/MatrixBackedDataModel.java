@@ -176,6 +176,10 @@ public class MatrixBackedDataModel extends AbstractDataModel {
     return userHistory.getCommons(userID1, userID2);
   }
 
+  public int getNumItemsWithPreferenceFrom(long userID) throws TasteException {
+    return userHistory.getPreferencesFrom(userID,  false).getNumNonZeroElements();
+  }
+
   @Override
   public void setPreference(long userID, long itemID, float value) throws TasteException {
 
