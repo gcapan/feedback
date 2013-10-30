@@ -1,21 +1,27 @@
 package com.discovery.feedback.rest;
 
 import com.discovery.contentdb.matrix.exception.ContentException;
-import com.discovery.feedback.model.MatrixBackedDataModel;
 import com.discovery.feedback.model.SideInfoAwareDataModel;
+import com.discovery.feedback.rest.adapters.SideInfoAwareDataModelBean;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.solr.client.solrj.SolrServerException;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 
 @Path("users")
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 public final class Users {
 
   // TODO: All REST endpoints should share the same datamodel.
-  @Inject
-  private MatrixBackedDataModel model;
+//  @ApplicationScoped
+//  @Inject
+  private SideInfoAwareDataModelBean model;
+
+  public Users() throws IOException, SolrServerException {
+    model = SideInfoAwareDataModelBean.getInstance();
+  }
 
   @GET
   @Path("{userID}")
@@ -30,8 +36,8 @@ public final class Users {
                          @QueryParam("longitude") Double longitude,
                          @QueryParam("rangeInKm") Integer rangeInKm,
                          @QueryParam("maxResults") Integer maxResults) throws ContentException {
-    if(model instanceof SideInfoAwareDataModel) {
-        SideInfoAwareDataModel sideInfoAwareDataModel = (SideInfoAwareDataModel) model;
+    if(model instanceof SideInfoAwareDataModelBean) {
+        SideInfoAwareDataModel sideInfoAwareDataModel = model;
       if(latitude != null && longitude != null && rangeInKm != null) {
         return sideInfoAwareDataModel.getUsers(contentDimension, keyword, latitude, longitude, rangeInKm).toArray();
       } else {

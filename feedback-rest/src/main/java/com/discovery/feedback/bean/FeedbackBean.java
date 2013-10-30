@@ -3,9 +3,6 @@ package com.discovery.feedback.bean;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
 import javax.ejb.MessageDrivenContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -14,17 +11,17 @@ import javax.jms.TextMessage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@MessageDriven(activationConfig = {
-   @ActivationConfigProperty(propertyName = "destinationLookup",
-      propertyValue = "jms/feedbackQueue"),
-   @ActivationConfigProperty(propertyName = "destinationType",
-      propertyValue = "javax.jms.Queue")
-})
+//@MessageDriven(activationConfig = {
+//   @ActivationConfigProperty(propertyName = "destinationLookup",
+//      propertyValue = "jms/feedbackQueue"),
+//   @ActivationConfigProperty(propertyName = "destinationType",
+//      propertyValue = "javax.jms.Queue")
+//})
 final class FeedbackBean implements MessageListener {
 
-  @Resource
+//  @Resource
   private MessageDrivenContext mdc;
-  private static final Logger LOGGER = Logger.getLogger("SimpleMessageBean");
+  private static final Logger LOGGER = Logger.getLogger(FeedbackBean.class.getCanonicalName());
 
   private Recommender recommender;
 
