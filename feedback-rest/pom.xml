@@ -10,7 +10,6 @@
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <groupId>com.discovery.feedback</groupId>
   <artifactId>feedback-rest</artifactId>
   <version>${rest.version}</version>
   <packaging>war</packaging>

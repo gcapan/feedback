@@ -13,17 +13,17 @@ import javax.ws.rs.core.MediaType;
 
 @Path("items")
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-public class Items {
+public final class Items {
 
   // TODO: All REST endpoints should share the same datamodel.
   @Inject
   private MatrixBackedDataModel model;
 
   @GET
-  @Path("{itemID}")
-  public Preference[] getUserPreferencesForItem(@PathParam("itemID") long itemID) throws TasteException {
+  @Path("{itemId}")
+  public Preference[] getUserPreferencesForItem(@PathParam("itemId") long itemId) throws TasteException {
 
-    PreferenceArray preferencesForItem = model.getPreferencesForItem(itemID);
+    PreferenceArray preferencesForItem = model.getPreferencesForItem(itemId);
     Preference[] prefArr = new Preference[0];
 
     if (preferencesForItem != null) {

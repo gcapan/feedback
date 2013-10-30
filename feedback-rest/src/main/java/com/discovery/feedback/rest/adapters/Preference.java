@@ -6,29 +6,29 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Preference {
-  private final long userID;
-  private final long itemID;
+public final class Preference {
+  private final long userId;
+  private final long itemId;
   private final float value;
 
-  public Preference(long userID, long itemID, float value) {
-    this.userID = userID;
-    this.itemID = itemID;
+  public Preference(long userId, long itemId, float value) {
+    this.userId = userId;
+    this.itemId = itemId;
     this.value = value;
   }
 
   public Preference() {
-    this.userID = Long.MIN_VALUE;
-    this.itemID = Long.MIN_VALUE;
+    this.userId = Long.MIN_VALUE;
+    this.itemId = Long.MIN_VALUE;
     this.value = Float.MIN_VALUE;
   }
 
-  public long getUserID() {
-    return userID;
+  public long getUserId() {
+    return userId;
   }
 
-  public long getItemID() {
-    return itemID;
+  public long getItemId() {
+    return itemId;
   }
 
   public float getValue() {

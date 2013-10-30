@@ -5,14 +5,13 @@ import com.discovery.feedback.model.MatrixBackedDataModel;
 import com.discovery.feedback.model.SideInfoAwareDataModel;
 import org.apache.mahout.cf.taste.common.TasteException;
 
-import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("users")
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-public class Users {
+public final class Users {
 
   // TODO: All REST endpoints should share the same datamodel.
   @Inject

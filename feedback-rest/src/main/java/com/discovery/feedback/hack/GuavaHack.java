@@ -12,7 +12,7 @@ import javax.enterprise.inject.Produces;
  * https://code.google.com/p/guava-libraries/issues/detail?id=1433
  */
 @ApplicationScoped
-public class GuavaHack {
+final class GuavaHack {
   @Produces
   java.util.Set<Service> dummyServices() {
     return ImmutableSet.of();
