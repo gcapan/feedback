@@ -43,17 +43,17 @@ public class Preferences {
   }
 
   @GET
-  public Float getRatingForItem(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId) throws TasteException {
+  public Float getPreference(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId) throws TasteException {
     return model.getPreferenceValue(userId, itemId);
   }
 
   @POST
-  public void setRatingForItem(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId, String value) {
+  public void setPreference(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId, String value) {
     context.createProducer().send(queue, String.format("%s,%s,%s", userId, itemId, value));
   }
 
   @DELETE
-  public void deleteItemRating(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId) throws TasteException {
+  public void deletePreference(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId) throws TasteException {
     model.removePreference(userId, itemId);
   }
 }

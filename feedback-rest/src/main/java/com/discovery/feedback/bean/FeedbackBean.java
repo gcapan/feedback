@@ -40,8 +40,6 @@ public final class FeedbackBean implements MessageListener {
     try {
       if (inMessage instanceof TextMessage) {
         String message = inMessage.getBody(String.class);
-        LOGGER.log(Level.INFO,
-           "MESSAGE BEAN: Message received: {0}", message);
 
         if (model != null) {
           String[] parts = message.split(",");

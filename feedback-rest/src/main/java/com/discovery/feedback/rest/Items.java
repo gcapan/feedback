@@ -5,7 +5,6 @@ import com.discovery.feedback.rest.adapters.Id;
 import com.discovery.feedback.rest.adapters.Preference;
 import com.discovery.feedback.rest.adapters.SideInfoAwareDataModelBean;
 import org.apache.mahout.cf.taste.common.TasteException;
-import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ws.rs.*;
@@ -28,19 +27,7 @@ public final class Items {
   @GET
   @Path("{itemId}")
   public Preference[] getUserPreferencesForItem(@PathParam("itemId") long itemId) throws TasteException {
-
-    PreferenceArray preferencesForItem = model.getPreferencesForItem(itemId);
-    Preference[] prefArr = new Preference[0];
-
-    if (preferencesForItem != null) {
-      prefArr = new Preference[preferencesForItem.length()];
-      int i = 0;
-      for (org.apache.mahout.cf.taste.model.Preference preference : preferencesForItem) {
-        prefArr[i] = new Preference(preference.getUserID(), preference.getItemID(), preference.getValue());
-        i++;
-      }
-    }
-    return prefArr;
+    return Preference.toPreferenceArray(model.getPreferencesForItem(itemId));
   }
 
   @GET

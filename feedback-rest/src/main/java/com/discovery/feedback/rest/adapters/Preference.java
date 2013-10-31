@@ -1,5 +1,7 @@
 package com.discovery.feedback.rest.adapters;
 
+import org.apache.mahout.cf.taste.model.PreferenceArray;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -33,5 +35,20 @@ public class Preference {
 
   public float getValue() {
     return value;
+  }
+
+  public static Preference[] toPreferenceArray(PreferenceArray pa) {
+
+    if(pa == null || pa.length() == 0)
+      return new Preference[0];
+
+    Preference[] prefArr = new Preference[pa.length()];
+    int i = 0;
+    for (org.apache.mahout.cf.taste.model.Preference preference : pa) {
+      prefArr[i] = new Preference(preference.getUserID(), preference.getItemID(), preference.getValue());
+      i++;
+    }
+
+    return prefArr;
   }
 }
