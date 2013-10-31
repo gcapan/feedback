@@ -182,13 +182,16 @@ public class MatrixBackedDataModel extends AbstractDataModel {
 
   @Override
   public void setPreference(long userID, long itemID, float value) throws TasteException {
-
-    throw new UnsupportedOperationException("Do this for individual history matrices");
+    // TODO: This might require a concurrency control mechanism for consistent reads.
+    userHistory.set(userID, itemID, value);
+    itemHistory.set(itemID, userID, value);
   }
 
   @Override
   public void removePreference(long userID, long itemID) throws TasteException {
-    throw new UnsupportedOperationException("Do this for individual history matrices");
+    // TODO: This might require a concurrency control mechanism for consistent reads.
+    userHistory.remove(userID, itemID);
+    itemHistory.remove(itemID, userID);
   }
 
   @Override

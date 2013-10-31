@@ -1,40 +1,59 @@
 package com.discovery.feedback.rest;
 
-import com.discovery.feedback.model.MatrixBackedDataModel;
+import com.discovery.feedback.rest.adapters.SideInfoAwareDataModelBean;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.annotation.Resource;
-import javax.jms.ConnectionFactory;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.jms.JMSContext;
+import javax.jms.JMSDestinationDefinition;
+import javax.jms.JMSProducer;
 import javax.jms.Queue;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 
+@JMSDestinationDefinition(
+   name = "java:comp/jms/feedbackQueue",
+   interfaceName = "javax.jms.Queue",
+   destinationName = "PhysicalFeedbackQueue")
+@Named
 @Path("preferences")
+@RequestScoped
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-final class Preferences {
+public class Preferences {
 
-  // TODO: All REST endpoints should share the same datamodel.
-  //@Inject
-  private MatrixBackedDataModel model;
-
-  @Resource(lookup = "java:comp/DefaultJMSConnectionFactory")
-  private ConnectionFactory connectionFactory;
+  @Inject
+  private JMSContext context;
 
   @Resource(lookup = "jms/feedbackQueue")
   private Queue queue;
 
+  private JMSProducer producer;
+
+  // TODO: All REST endpoints should share the same datamodel.
+  //@Inject
+  private SideInfoAwareDataModelBean model;
+
+  public Preferences() throws IOException, SolrServerException {
+    model = SideInfoAwareDataModelBean.getInstance();
+  }
+
   @GET
-  public Float getRatingForItem(@MatrixParam("itemID") long itemID, @MatrixParam("userID") long userID) throws TasteException {
-    return model.getPreferenceValue(userID, itemID);
+  public Float getRatingForItem(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId) throws TasteException {
+    return model.getPreferenceValue(userId, itemId);
   }
 
   @POST
-  public void setRatingForItem(@MatrixParam("itemID") long itemID, @MatrixParam("userID") long userID, String value) {
-    connectionFactory.createContext().createProducer().send(queue, String.format("%s,%s,%s", userID, itemID, value));
+  public void setRatingForItem(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId, String value) {
+    context.createProducer().send(queue, String.format("%s,%s,%s", userId, itemId, value));
   }
 
   @DELETE
-  public void deleteItemRating(@MatrixParam("itemID") long itemID, @MatrixParam("userID") long userID) throws TasteException {
-    model.removePreference(userID, itemID);
+  public void deleteItemRating(@MatrixParam("itemId") long itemId, @MatrixParam("userId") long userId) throws TasteException {
+    model.removePreference(userId, itemId);
   }
 }

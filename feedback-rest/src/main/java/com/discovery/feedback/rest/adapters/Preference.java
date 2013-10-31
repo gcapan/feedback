@@ -6,10 +6,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class Preference {
-  private final long userId;
-  private final long itemId;
-  private final float value;
+public class Preference {
+  private long userId;
+  private long itemId;
+  private float value;
 
   public Preference(long userId, long itemId, float value) {
     this.userId = userId;
