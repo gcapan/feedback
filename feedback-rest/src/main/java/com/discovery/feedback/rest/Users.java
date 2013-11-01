@@ -6,6 +6,7 @@ import com.discovery.feedback.rest.adapters.Id;
 import com.discovery.feedback.rest.adapters.Preference;
 import com.discovery.feedback.rest.adapters.SideInfoAwareDataModelBean;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ws.rs.*;
@@ -17,27 +18,62 @@ import java.io.IOException;
 public final class Users {
 
   // TODO: All REST endpoints should share the same datamodel.
-//  @ApplicationScoped
-//  @Inject
+  //  @ApplicationScoped
+  //  @Inject
   private SideInfoAwareDataModelBean model;
 
   public Users() throws IOException, SolrServerException {
     model = SideInfoAwareDataModelBean.getInstance();
   }
 
+  // TODO: Where should this be mapped. getUserIDs() and getNumUsers() share the same path & method.
+//  @GET
+//  @Path("allIds")
+//  public Id[] getUserIds() {
+//    throw new UnsupportedOperationException("Not Implemented");
+//  }
+
   @GET
-  @Path("{userId}")
-  public Preference[] getItemIDsFromUser(@PathParam("userId") long userId) throws TasteException {
+  @Path("{userId}/itemIds")
+  public Id[] getItemIDsFromUser(@PathParam("userId") long userId) throws TasteException {
+    return Id.toIdArray(model.getItemIDsFromUser(userId));
+  }
+
+  @GET
+  @Path("{userId}/numCommonRatedItems/{secondUserId}")
+  public int getNumCommonRatedItems(@PathParam("userId") long userId, @PathParam("secondUserId") long secondUserId) throws TasteException {
+    return model.getNumItemsRatedBy(userId, secondUserId);
+  }
+
+  @GET
+  @Path("{userId}/similarity/{secondUserId}")
+  public double getUserSimilarity(@QueryParam("similarityMeasureClass") String similarityMeasureClass,
+                                  @PathParam("userId") long userId,
+                                  @PathParam("secondUserId") long secondUserId,
+                                  @QueryParam("normalize") boolean normalize) throws ClassNotFoundException, TasteException {
+
+    return model.getUserSimilarity((Class<VectorSimilarityMeasure>) Class.forName(similarityMeasureClass), userId, secondUserId, normalize);
+  }
+
+  @GET
+  @Path("{userId}/preferences")
+  public Preference[] getPreferencesFromUser(@PathParam("userId") long userId) throws TasteException {
     return Preference.toPreferenceArray(model.getPreferencesFromUser(userId));
   }
 
   @GET
+  public int getNumUsers() throws TasteException {
+    return model.getNumUsers();
+  }
+
+  @GET
   public Id[] getUsers(@QueryParam("contentDimension") String contentDimension,
-                         @QueryParam("keyword") String keyword,
-                         @QueryParam("latitude") Double latitude,
-                         @QueryParam("longitude") Double longitude,
-                         @QueryParam("rangeInKm") Integer rangeInKm,
-                         @QueryParam("maxResults") Integer maxResults) throws ContentException {
+                       @QueryParam("keyword") String keyword,
+                       @QueryParam("latitude") Double latitude,
+                       @QueryParam("longitude") Double longitude,
+                       @QueryParam("rangeInKm") Integer rangeInKm,
+                       @QueryParam("maxResults") Integer maxResults) throws ContentException {
+
     if (model instanceof SideInfoAwareDataModelBean) {
       SideInfoAwareDataModel sideInfoAwareDataModel = model;
       if (latitude != null && longitude != null && rangeInKm != null) {

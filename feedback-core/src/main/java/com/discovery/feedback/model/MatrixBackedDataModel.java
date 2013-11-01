@@ -26,12 +26,10 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   //for fast access to an item history
   private History itemHistory;
 
-
   public MatrixBackedDataModel(History userHistory, History itemHistory) {
     this.userHistory = userHistory;
     this.itemHistory = itemHistory;
   }
-
 
   //no need to expose in Web
   public Iterable<Preference> preferences() throws TasteException {
@@ -43,7 +41,6 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   public LongPrimitiveIterator getUserIDs() throws TasteException {
     return userHistory.allFroms();
   }
-
 
   @Override
   //see orderPreferencesFromUserAsc, it might be handier

@@ -5,6 +5,7 @@ import com.discovery.feedback.rest.adapters.Id;
 import com.discovery.feedback.rest.adapters.Preference;
 import com.discovery.feedback.rest.adapters.SideInfoAwareDataModelBean;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ws.rs.*;
@@ -24,10 +25,33 @@ public final class Items {
     model = SideInfoAwareDataModelBean.getInstance();
   }
 
+  // TODO: Where should this be mapped. getItemIDs() and getNumItems() share the same path & method.
+  //  @GET
+  //  @Path("allIds")
+  //  public Id[] getItemIds() {
+  //    throw new UnsupportedOperationException("Not Implemented");
+  //  }
+
   @GET
   @Path("{itemId}")
   public Preference[] getUserPreferencesForItem(@PathParam("itemId") long itemId) throws TasteException {
     return Preference.toPreferenceArray(model.getPreferencesForItem(itemId));
+  }
+
+  @GET
+  @Path("{itemId}/numCommonUsersRated/{secondItemId}")
+  public int getNumCommonRatedItems(@PathParam("itemId") long itemId, @PathParam("secondItemId") long secondItemId) throws TasteException {
+    return model.getNumUsersRated(itemId, secondItemId);
+  }
+
+  @GET
+  @Path("{itemId}/similarity/{secondItemId}")
+  public double getUserSimilarity(@QueryParam("similarityMeasureClass") String similarityMeasureClass,
+                                  @PathParam("itemId") long itemId,
+                                  @PathParam("secondItemId") long secondItemId,
+                                  @QueryParam("normalize") boolean normalize) throws ClassNotFoundException, TasteException {
+
+    return model.getItemSimilarity((Class<VectorSimilarityMeasure>) Class.forName(similarityMeasureClass), itemId, secondItemId, normalize);
   }
 
   @GET
@@ -49,15 +73,15 @@ public final class Items {
       throw new IllegalArgumentException("An object of " + SideInfoAwareDataModel.class.getCanonicalName() + " is required for this operation.");
     }
   }
-//
-//  @POST
-//  @Path("by_solr_query")
-//  public long[] getItemsBySolrQuery() throws ContentException {
-//    if (model instanceof SideInfoAwareDataModel) {
-//      SideInfoAwareDataModel sideInfoAwareDataModel = (SideInfoAwareDataModel) model;
-//      return sideInfoAwareDataModel.getItems(contentDimension, , maxResults).toArray();
-//    } else {
-//      throw new IllegalArgumentException("An object of " + SideInfoAwareDataModel.class.getCanonicalName() + " is required for this operation.");
-//    }
-//  }
+
+  @GET
+  public int getNumItems() throws TasteException {
+    return model.getNumItems();
+  }
+
+  @GET
+  @Path("{itemId}/numUsersWithPreferenceFor")
+  public int getNumUsersWithPreferenceFor(@PathParam("itemId") long itemId) throws TasteException {
+    return model.getNumUsersWithPreferenceFor(itemId);
+  }
 }
