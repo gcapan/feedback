@@ -24,6 +24,9 @@ public final class Id {
   }
 
   public static Id[] toIdArray(FastIDSet fastIDSet) {
+    if(fastIDSet == null || fastIDSet.size() == 0)
+      return new Id[0];
+
     Id[] ids = new Id[fastIDSet.size()];
     int i = 0;
     for(Long id : fastIDSet) {

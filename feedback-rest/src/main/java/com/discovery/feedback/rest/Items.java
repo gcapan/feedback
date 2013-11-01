@@ -9,6 +9,7 @@ import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
 import org.apache.solr.client.solrj.SolrServerException;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public final class Items {
     model = SideInfoAwareDataModelBean.getInstance();
   }
 
+  // TODO: Merge this with bySideInfo
   @GET
   public Id[] getItemIds(@QueryParam("start") @DefaultValue("0") int start,
                          @QueryParam("limit") @DefaultValue("10") int limit) throws TasteException {
@@ -69,16 +71,16 @@ public final class Items {
 
   @GET
   @Path("bySideInfo")
-  public Id[] getItems(@QueryParam("contentDimension") String contentDimension,
+  public Id[] getItems(@NotNull @QueryParam("contentDimension") String contentDimension,
                        @QueryParam("keyword") String keyword,
                        @QueryParam("latitude") Double latitude,
                        @QueryParam("longitude") Double longitude,
                        @QueryParam("rangeInKm") Integer rangeInKm,
-                       @QueryParam("maxResults") Integer maxResults) throws Exception {
+                       @QueryParam("maxResults") @DefaultValue("10") Integer maxResults) throws Exception {
+
     if (model instanceof SideInfoAwareDataModelBean) {
       SideInfoAwareDataModel sideInfoAwareDataModel = model;
       if (latitude != null && longitude != null && rangeInKm != null) {
-
         return Id.toIdArray(sideInfoAwareDataModel.getItems(contentDimension, keyword, latitude, longitude, rangeInKm));
       } else {
         return Id.toIdArray(sideInfoAwareDataModel.getItems(contentDimension, keyword, maxResults));

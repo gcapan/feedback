@@ -10,6 +10,7 @@ import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
 import org.apache.solr.client.solrj.SolrServerException;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public final class Users {
     model = SideInfoAwareDataModelBean.getInstance();
   }
 
-  // TODO: Implement pagination (over a forward iterator?)
+  // TODO: Merge this with bySideInfo
   @GET
   public Id[] getUserIds(@QueryParam("start") @DefaultValue("0") int start,
                          @QueryParam("limit") @DefaultValue("10") int limit) throws TasteException {
@@ -77,7 +78,7 @@ public final class Users {
 
   @GET
   @Path("bySideInfo")
-  public Id[] getUsers(@QueryParam("contentDimension") String contentDimension,
+  public Id[] getUsers(@NotNull @QueryParam("contentDimension") String contentDimension,
                        @QueryParam("keyword") String keyword,
                        @QueryParam("latitude") Double latitude,
                        @QueryParam("longitude") Double longitude,
