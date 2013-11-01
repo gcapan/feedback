@@ -6,12 +6,15 @@ import com.discovery.feedback.rest.adapters.Id;
 import com.discovery.feedback.rest.adapters.Preference;
 import com.discovery.feedback.rest.adapters.SideInfoAwareDataModelBean;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Path("users")
 @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
@@ -28,8 +31,20 @@ public final class Users {
 
   // TODO: Implement pagination (over a forward iterator?)
   @GET
-  public Id[] getUserIds() {
-    throw new UnsupportedOperationException("Not Implemented");
+  public Id[] getUserIds(@QueryParam("start") @DefaultValue("0") int start,
+                         @QueryParam("limit") @DefaultValue("10") int limit) throws TasteException {
+    LongPrimitiveIterator it = model.getUserIDs();
+    it.skip(start);
+
+    List<Id> ids = new ArrayList<>(0);
+    while(it.hasNext() && limit >= 0) {
+      limit--;
+      ids.add(new Id(it.nextLong()));
+    }
+
+    Id[] idsArr = ids.toArray(new Id[ids.size()]);
+
+    return idsArr;
   }
 
   @GET
