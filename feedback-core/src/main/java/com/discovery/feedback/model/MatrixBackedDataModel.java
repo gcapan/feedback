@@ -169,10 +169,6 @@ public class MatrixBackedDataModel extends AbstractDataModel {
   }
 
   //expose in web
-  public int getNumItemsWithPreferenceFrom(long userID1, long userID2) throws TasteException {
-    return userHistory.getCommons(userID1, userID2);
-  }
-
   public int getNumItemsWithPreferenceFrom(long userID) throws TasteException {
     return userHistory.getPreferencesFrom(userID,  false).getNumNonZeroElements();
   }

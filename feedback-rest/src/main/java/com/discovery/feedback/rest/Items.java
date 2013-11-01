@@ -17,20 +17,19 @@ import java.io.IOException;
 public final class Items {
 
   // TODO: All REST endpoints should share the same datamodel.
-//  @ApplicationScoped
-//  @Inject
+  //  @ApplicationScoped
+  //  @Inject
   private SideInfoAwareDataModelBean model;
 
   public Items() throws IOException, SolrServerException {
     model = SideInfoAwareDataModelBean.getInstance();
   }
 
-  // TODO: Where should this be mapped. getItemIDs() and getNumItems() share the same path & method.
-  //  @GET
-  //  @Path("allIds")
-  //  public Id[] getItemIds() {
-  //    throw new UnsupportedOperationException("Not Implemented");
-  //  }
+  // TODO: Implement pagination (over a forward iterator?)
+  @GET
+  public Id[] getItemIds() {
+    throw new UnsupportedOperationException("Not Implemented");
+  }
 
   @GET
   @Path("{itemId}")
@@ -55,6 +54,7 @@ public final class Items {
   }
 
   @GET
+  @Path("bySideInfo")
   public Id[] getItems(@QueryParam("contentDimension") String contentDimension,
                        @QueryParam("keyword") String keyword,
                        @QueryParam("latitude") Double latitude,
@@ -72,11 +72,6 @@ public final class Items {
     } else {
       throw new IllegalArgumentException("An object of " + SideInfoAwareDataModel.class.getCanonicalName() + " is required for this operation.");
     }
-  }
-
-  @GET
-  public int getNumItems() throws TasteException {
-    return model.getNumItems();
   }
 
   @GET

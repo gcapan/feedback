@@ -26,12 +26,11 @@ public final class Users {
     model = SideInfoAwareDataModelBean.getInstance();
   }
 
-  // TODO: Where should this be mapped. getUserIDs() and getNumUsers() share the same path & method.
-//  @GET
-//  @Path("allIds")
-//  public Id[] getUserIds() {
-//    throw new UnsupportedOperationException("Not Implemented");
-//  }
+  // TODO: Implement pagination (over a forward iterator?)
+  @GET
+  public Id[] getUserIds() {
+    throw new UnsupportedOperationException("Not Implemented");
+  }
 
   @GET
   @Path("{userId}/itemIds")
@@ -62,17 +61,13 @@ public final class Users {
   }
 
   @GET
-  public int getNumUsers() throws TasteException {
-    return model.getNumUsers();
-  }
-
-  @GET
+  @Path("bySideInfo")
   public Id[] getUsers(@QueryParam("contentDimension") String contentDimension,
                        @QueryParam("keyword") String keyword,
                        @QueryParam("latitude") Double latitude,
                        @QueryParam("longitude") Double longitude,
                        @QueryParam("rangeInKm") Integer rangeInKm,
-                       @QueryParam("maxResults") Integer maxResults) throws ContentException {
+                       @QueryParam("maxResults") @DefaultValue("10") Integer maxResults) throws ContentException {
 
     if (model instanceof SideInfoAwareDataModelBean) {
       SideInfoAwareDataModel sideInfoAwareDataModel = model;
@@ -85,4 +80,11 @@ public final class Users {
       throw new IllegalArgumentException("An object of " + SideInfoAwareDataModel.class.getCanonicalName() + " is required for this operation.");
     }
   }
+
+  @GET
+  @Path("{userId}/numItemsWithPreferenceFrom")
+  public int getNumItemsWithPreferenceFrom(@PathParam("userId") long userId) throws TasteException {
+    return model.getNumItemsWithPreferenceFrom(userId);
+  }
+
 }
