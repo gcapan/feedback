@@ -35,7 +35,7 @@
       <version>7.0</version>
       <scope>provided</scope>
     </dependency>
-    <!-- HttpSolrServer needs this -->
+    <!-- HttpSolrServer needs these -->
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>

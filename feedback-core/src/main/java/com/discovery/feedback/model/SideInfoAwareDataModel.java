@@ -7,8 +7,6 @@ import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.math.Vector;
 import org.apache.solr.client.solrj.SolrQuery;
 
-import java.util.Collection;
-
 /**
  * {@author} gcapan
  */
@@ -35,8 +33,17 @@ public class SideInfoAwareDataModel extends MatrixBackedDataModel {
   public FastIDSet getUsers(String contentDimension, String keyword, int maxResults) throws ContentException{
     return userSideInfo.getCandidates(contentDimension, keyword, maxResults);
   }
+
+  public FastIDSet getUsers(String contentDimension, String keyword, int start, int maxResults) throws ContentException{
+    return userSideInfo.getCandidates(contentDimension, keyword, start, maxResults);
+  }
+
   public FastIDSet getUsers(String contentDimension, SolrQuery solrQuery, int maxResults) throws ContentException{
     return userSideInfo.getCandidates(contentDimension, solrQuery, maxResults);
+  }
+
+  public FastIDSet getUsers(String contentDimension, SolrQuery solrQuery, int start, int maxResults) throws ContentException{
+    return userSideInfo.getCandidates(contentDimension, solrQuery, start, maxResults);
   }
 
   public FastIDSet getUsers(String contentDimension, String keyword, double latitude,
@@ -48,8 +55,16 @@ public class SideInfoAwareDataModel extends MatrixBackedDataModel {
     return itemSideInfo.getCandidates(contentDimension, keyword, maxResults);
   }
 
+  public FastIDSet getItems(String contentDimension, String keyword, int start, int maxResults) throws ContentException{
+    return itemSideInfo.getCandidates(contentDimension, keyword, start, maxResults);
+  }
+
   public FastIDSet getItems(String contentDimension, SolrQuery solrQuery, int maxResults) throws ContentException{
     return itemSideInfo.getCandidates(contentDimension, solrQuery, maxResults);
+  }
+
+  public FastIDSet getItems(String contentDimension, SolrQuery solrQuery, int start, int maxResults) throws ContentException{
+    return itemSideInfo.getCandidates(contentDimension, solrQuery, start, maxResults);
   }
 
   public FastIDSet getItems(String contentDimension, String keyword, double latitude,
